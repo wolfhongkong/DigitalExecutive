@@ -196,9 +196,13 @@ function dreamingSummary(result) {
       : 'Dreaming waits for published speaker assignments.').join(' ');
 }
 async function readImportResponse(response, onProgress) {
+  return readEventStream(response, { progress: onProgress }, 'Import',
+    'Analysis connection ended before completion. Check the library before retrying.');
+}
+async function readEventStream(response, handlers, label, endedMessage) {
   if (!response.ok || !response.headers.get('content-type')?.startsWith('application/x-ndjson')) {
     const result = await response.json();
-    if (!response.ok) throw new Error(result.error || `Import failed (${response.status}).`);
+    if (!response.ok) throw new Error(result.error || `${label} failed (${response.status}).`);
     return result;
   }
   const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
@@ -213,13 +217,13 @@ async function readImportResponse(response, onProgress) {
         const event = JSON.parse(pending.slice(0, end));
         pending = pending.slice(end + 1);
         if (event.type === 'error') throw new Error(event.error);
-        if (event.type === 'progress') onProgress(event);
-        else if (event.type === 'result') result = event.result;
-        else throw new Error('Unrecognized analysis response.');
+        if (event.type === 'result') result = event.result;
+        else if (handlers[event.type]) handlers[event.type](event);
+        else throw new Error(`Unrecognized ${label.toLowerCase()} response.`);
       }
       if (done) break;
     }
-    if (pending.trim() || !result) throw new Error('Analysis connection ended before completion. Check the library before retrying.');
+    if (pending.trim() || !result) throw new Error(endedMessage);
     return result;
   } finally { reader.releaseLock(); }
 }
@@ -2150,11 +2154,46 @@ $('#chat-form').addEventListener('submit', run(async () => {
       conversationId = chat.id;
       saveWorkspace();
     }
-    await api('chat', 'POST', { ...context(), question });
+    const live = showStreamingExchange(question);
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...context(), question, stream: true }),
+      });
+      await readEventStream(response, { delta: event => live.append(event.text) }, 'Chat',
+        'The answer was interrupted before it finished. Please ask again.');
+    } catch (error) {
+      await refresh().catch(() => {});
+      throw error;
+    } finally { live.done(); }
     $('#question').value = '';
     await refresh();
   } finally { setBusy(false); }
 }));
+// Shows the question and a growing answer until the saved exchange (with sources) is re-rendered.
+function showStreamingExchange(question) {
+  const messages = $('#messages');
+  messages.querySelector('.empty')?.remove();
+  const asked = node('article', 'message user');
+  asked.append(node('div', 'message-label', 'YOU'), node('div', 'message-text', question));
+  const card = node('article', 'message assistant streaming');
+  const text = node('div', 'message-text');
+  card.append(node('div', 'message-label', 'AI REPRESENTATION · WRITING…'), text);
+  messages.setAttribute('aria-busy', 'true');
+  messages.append(asked, card);
+  messages.scrollTop = messages.scrollHeight;
+  return {
+    append(piece) {
+      const following = messages.scrollHeight - messages.scrollTop - messages.clientHeight < 40;
+      text.textContent += piece;
+      if (following) messages.scrollTop = messages.scrollHeight;
+    },
+    done() {
+      card.classList.remove('streaming');
+      messages.removeAttribute('aria-busy');
+    },
+  };
+}
 $('#question').addEventListener('keydown', event => {
   if (event.key === 'Enter' && !event.shiftKey) {
     event.preventDefault();

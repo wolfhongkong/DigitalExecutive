@@ -483,11 +483,19 @@ export function createApp({
           const executive = store.context(input);
           const question = text(input.question, 'Question', 4000);
           const sources = store.retrieve(input, question, await semanticQuery(input, question));
+          // Streaming switches to NDJSON only with the first text, so earlier failures keep their HTTP status.
+          const onDelta = input.stream === true ? text => {
+            if (!progressStream) {
+              response.writeHead(200, { 'Content-Type': 'application/x-ndjson; charset=utf-8' });
+              progressStream = true;
+            }
+            response.write(`${JSON.stringify({ type: 'delta', text })}\n`);
+          } : undefined;
           const { usage, ...answer } = await answerQuestion({
             executive, soul: store.soul(executive.id, input).content,
             question, sources, history: store.history(input),
             pastMemories: chatMemoryActive() ? store.chatMemories(input, { activeOnly: true, limit: CHAT_MEMORY_PROMPT_LIMIT }) : [],
-            company: store.companyProfile().profile, apiKey, model, provider, fetcher,
+            company: store.companyProfile().profile, apiKey, model, provider, fetcher, onDelta,
           });
           if (usage) {
             promptCache.answers++;

@@ -704,3 +704,83 @@ test('provider failures surface through HTTP and do not save a successful exchan
   const history = await request(`messages?${new URLSearchParams(context)}`);
   assert.equal(history.body.length, 0);
 });
+
+function sseResponse(pieces, { usage, fail } = {}) {
+  const events = [...pieces.map(content => `data: ${JSON.stringify({ choices: [{ delta: { content } }] })}\n\n`),
+    ...(usage ? [`data: ${JSON.stringify({ choices: [], usage })}\n\n`] : []),
+    ...(fail ? [`data: ${JSON.stringify({ error: { message: fail } })}\n\n`] : ['data: [DONE]\n\n'])].join('');
+  // Split at awkward places so events straddle network chunks.
+  const chunks = events.match(/[\s\S]{1,7}/g);
+  return new Response(new ReadableStream({
+    start(controller) { for (const chunk of chunks) controller.enqueue(new TextEncoder().encode(chunk)); controller.close(); },
+  }), { headers: { 'Content-Type': 'text/event-stream' } });
+}
+
+test('streamed answers deliver each piece as it arrives and resolve to the same answer', async () => {
+  const deltas = [];
+  let payload;
+  const input = { executive: { id: 'exec', name: 'Fictional CFO', role: 'CFO', bio: '' }, question: 'Budget?', history: [],
+    apiKey: 'key', model: 'model', provider: providerConfig({ OPENAI_API_KEY: 'key' }), onDelta: text => deltas.push(text) };
+  const answer = await answerQuestion({ ...input, sources: [],
+    fetcher: async (_url, options) => {
+      payload = JSON.parse(options.body);
+      return sseResponse(['Keep ', 'a cash ', 'buffer.'], { usage: { prompt_tokens: 100, prompt_tokens_details: { cached_tokens: 60 } } });
+    } });
+  assert.equal(payload.stream, true);
+  assert.deepEqual(payload.stream_options, { include_usage: true });
+  assert.deepEqual(deltas.slice(1), ['Keep ', 'a cash ', 'buffer.']);
+  assert.match(deltas[0], /^General LLM knowledge/);
+  assert.equal(deltas.join(''), answer.content);
+  assert.equal(answer.engine, 'openai-general');
+  assert.deepEqual(answer.usage, { promptTokens: 100, cachedTokens: 60 });
+
+  deltas.length = 0;
+  const sources = [{ label: 'S1', title: 'Plan', text: 'Buffer.' }];
+  const farm = providerConfig({ AI_PROVIDER: 'llm-farm', MODEL_FARM_API_KEY: 'key', AI_MODEL: 'model',
+    AI_CHAT_URL: 'https://aoai-farm.bosch-temp.com/api/openai/deployments/model/chat/completions' });
+  const fallback = await answerQuestion({ ...input, sources, provider: farm,
+    fetcher: async (_url, options) => {
+      payload = JSON.parse(options.body);
+      return Response.json({ choices: [{ message: { content: 'Keep a buffer [S1].' } }] });
+    } });
+  assert.equal(payload.stream, true);
+  assert.equal(payload.stream_options, undefined);
+  assert.deepEqual(deltas, ['Keep a buffer [S1].']);
+  assert.equal(fallback.content, 'Keep a buffer [S1].');
+
+  await assert.rejects(answerQuestion({ ...input, sources, fetcher: async () => sseResponse(['Partial'], { fail: 'overloaded' }) }),
+    /stopped the answer: overloaded/);
+  await assert.rejects(answerQuestion({ ...input, sources, fetcher: async () => sseResponse([' ']) }), /empty answer/);
+});
+
+test('chat streams NDJSON over HTTP, saves only completed answers and keeps early errors as JSON', async t => {
+  const logger = t.mock.method(console, 'error', () => {});
+  let reply = () => sseResponse(['Prioritize ', 'onboarding [S1].']);
+  const { base, request } = await fixture(t, { apiKey: 'test-key', fetcher: async () => reply() });
+  const ask = () => fetch(`${base}/api/chat`, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...context, question: 'What are the priorities?', stream: true }) });
+
+  const response = await ask();
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get('content-type'), /application\/x-ndjson/);
+  const events = (await response.text()).trim().split('\n').map(line => JSON.parse(line));
+  assert.deepEqual(events.slice(0, -1), [{ type: 'delta', text: 'Prioritize ' }, { type: 'delta', text: 'onboarding [S1].' }]);
+  assert.equal(events.at(-1).type, 'result');
+  assert.equal(events.at(-1).result.content, 'Prioritize onboarding [S1].');
+  assert.equal(events.at(-1).result.sources[0].label, 'S1');
+  let history = (await request(`messages?${new URLSearchParams(context)}`)).body;
+  assert.equal(history[1].content, 'Prioritize onboarding [S1].');
+
+  reply = () => sseResponse(['Half an answer'], { fail: 'overloaded' });
+  const broken = (await (await ask()).text()).trim().split('\n').map(line => JSON.parse(line));
+  assert.equal(broken.at(-1).type, 'error');
+  assert.match(broken.at(-1).error, /overloaded/);
+
+  reply = () => new Response('', { status: 429 });
+  const early = await ask();
+  assert.equal(early.status, 502);
+  assert.match((await early.json()).error, /HTTP 429/);
+  history = (await request(`messages?${new URLSearchParams(context)}`)).body;
+  assert.equal(history.length, 2);
+  assert.equal(logger.mock.callCount(), 2);
+});

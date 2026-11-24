@@ -213,6 +213,17 @@ you are. Every executive is also a person you can log in as; creating an executi
 creates that person. There is no password or real access control yet.
 Existing message histories are automatically preserved as saved conversations.
 
+Answers stream in: the reply appears word by word as the model writes it, and its
+source links and excerpts are added once it is complete. Only completed answers are
+saved; if the provider stops partway, the partial text is discarded, an error is
+shown and your question stays in the box to send again. The provider request times
+out only after 60 seconds without new text, so long answers are not cut off.
+`POST /api/chat` with `"stream": true` returns newline-delimited JSON
+(`{"type":"delta","text":...}` events, then `{"type":"result","result":...}` or
+`{"type":"error","error":...}`); without it, it returns the complete answer as JSON,
+as the evaluation suite uses. Gateways that ignore streaming still work; their
+answer simply appears all at once.
+
 **Manage executive** opens one workspace for editing the profile and managing
 knowledge. The library groups sources into **Mails**, **Videos**,
 **Presentations**, and **Others**, using the original filename rather than the
@@ -1290,8 +1301,8 @@ system. Old assistant answers are not sent back as evidence to the model.
   An answer is not an executive decision, approval, or authorization.
 - Document instructions are treated as untrusted evidence in the model prompt.
   That is not a guarantee against prompt injection or hallucinations.
-- No automatic connectors, background ingestion, streamed
-  responses, multi-executive panel conversations, or identity verification yet.
+- No automatic connectors, background ingestion, multi-executive panel
+  conversations, or identity verification yet.
 - Protect the local database and never commit `.env` or `data/`.
 
 ## Validate
