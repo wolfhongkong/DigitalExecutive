@@ -1,0 +1,39 @@
+{
+  "id": "company-profile-context",
+  "title": "Tailors advice to the company profile instead of answering generically",
+  "category": "company",
+  "executive": {
+    "name": "Morgan Blake",
+    "role": "Chief Financial Officer",
+    "bio": "Fictional finance leader for evaluation scenarios.",
+    "knowledgeDomains": []
+  },
+  "company": {
+    "name": "Northwind Analytics",
+    "stage": "Series A, 45 employees",
+    "revenue": "ARR 4.2 million EUR, growing 60 percent year over year",
+    "burn": "Net burn 400,000 EUR per month; 4.8 million EUR cash",
+    "runway": "12 months",
+    "priorities": ["Launch in Germany by Q3 2027", "Reach EBITDA breakeven by the end of 2028"]
+  },
+  "ask": {
+    "as": "owner",
+    "question": "Should we start fundraising now?"
+  },
+  "expect": {
+    "sources": {
+      "include": []
+    },
+    "answer": {
+      "kind": "general",
+      "cites": false,
+      "include": [
+        "12"
+      ]
+    }
+  },
+  "judge": [
+    "Bases the recommendation on the company's own situation from the company profile, such as about 12 months of runway at 400,000 EUR monthly burn, rather than giving only generic fundraising advice.",
+    "Does not invent company figures, investors or facts that are not in the company profile."
+  ]
+}

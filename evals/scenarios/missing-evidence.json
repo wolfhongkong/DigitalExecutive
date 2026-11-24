@@ -1,0 +1,31 @@
+{
+  "id": "missing-evidence",
+  "title": "Says it does not know instead of inventing company facts",
+  "category": "grounding",
+  "executive": {
+    "name": "Riley Chen",
+    "role": "Chief Operating Officer",
+    "bio": "Fictional operations leader.",
+    "knowledgeDomains": []
+  },
+  "documents": [
+    {
+      "uploader": "owner",
+      "title": "Warehouse safety checklist",
+      "content": "Warehouse safety checklist: wear protective shoes, keep aisles clear, report forklift incidents within 24 hours."
+    }
+  ],
+  "ask": {
+    "as": "owner",
+    "question": "What was our customer churn rate last quarter?"
+  },
+  "expect": {
+    "answer": {
+      "cites": false
+    }
+  },
+  "judge": [
+    "Clearly says the company's churn rate is not available in the provided information instead of stating it.",
+    "Does not present any number as the company's actual churn rate; any benchmark or typical range is explicitly labeled as general knowledge."
+  ]
+}

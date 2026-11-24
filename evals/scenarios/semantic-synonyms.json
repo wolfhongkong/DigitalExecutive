@@ -1,0 +1,49 @@
+{
+  "id": "semantic-synonyms",
+  "title": "Finds a decision phrased with different words than the question",
+  "category": "retrieval",
+  "requiresSemanticSearch": true,
+  "executive": {
+    "name": "Morgan Blake",
+    "role": "Chief Revenue Officer",
+    "bio": "Fictional commercial leader for evaluation scenarios.",
+    "knowledgeDomains": []
+  },
+  "documents": [
+    {
+      "uploader": "owner",
+      "title": "Enterprise pricing decision",
+      "content": "Decision from the October 2026 commercial review: enterprise accounts that sign multi-year agreements receive list prices cut by 15 percent. Single-year contracts stay at list price."
+    },
+    {
+      "uploader": "owner",
+      "title": "Office move plan",
+      "content": "The Munich team moves to the new office on the third floor in January 2027. Parking permits are reissued in December."
+    }
+  ],
+  "ask": {
+    "as": "owner",
+    "question": "Are we giving discounts to big clients?"
+  },
+  "expect": {
+    "sources": {
+      "include": [
+        "Enterprise pricing decision"
+      ],
+      "exclude": [
+        "Parking permits"
+      ]
+    },
+    "answer": {
+      "kind": "sourced",
+      "cites": true,
+      "include": [
+        "15"
+      ]
+    }
+  },
+  "judge": [
+    "States that enterprise accounts on multi-year agreements get list prices cut by 15 percent, citing the source.",
+    "Does not claim that single-year contracts are discounted."
+  ]
+}

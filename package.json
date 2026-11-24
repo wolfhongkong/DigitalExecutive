@@ -1,0 +1,38 @@
+{
+  "name": "digital-executive",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local executive persona and retrieval sandbox",
+  "type": "module",
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server.js",
+    "start:voices": "VOICE_FINGERPRINTS=speechbrain node --env-file-if-exists=.env server.js",
+    "voices:setup": "python3 -m venv .venv-voices && .venv-voices/bin/python -m pip install -r requirements-voices.txt",
+    "test:voices": "VOICE_FINGERPRINT_SMOKE=true node --test test/voice-fingerprints.test.js",
+    "test": "VOICE_FINGERPRINTS=off CHAT_MEMORY=off SEMANTIC_SEARCH=off node --test",
+    "eval": "node --env-file-if-exists=.env evals/run.js",
+    "eval:retrieval": "node evals/run.js --retrieval-only",
+    "check": "node --check server.js && node --check lib/store.js && node --check lib/recordings.js && node --check lib/diarization.js && node --check lib/voice-fingerprints.js && node --check lib/originals.js && node --check lib/transcription.js && node --check lib/input.js && node --check lib/soul.js && node --check lib/executive-memory.js && node --check lib/dreaming.js && node --check lib/chat-memory.js && node --check lib/builtin-knowledge.js && node --check lib/setup-status.js && node --check lib/general-knowledge.js && node --check lib/provider.js && node --check lib/embeddings.js && node --check lib/company-profile.js && node --check lib/chat.js && node --check lib/video.js && node --check lib/participants.js && node --check lib/documents.js && node --check lib/document-worker.js && node --check evals/lib.js && node --check evals/run.js && node --check public/app.js"
+  },
+  "dependencies": {
+    "@e965/xlsx": "^0.20.3",
+    "@ffprobe-installer/ffprobe": "^2.1.2",
+    "@kenjiuno/msgreader": "^1.29.0",
+    "ffmpeg-static": "^5.3.0",
+    "lucide": "^1.71.0",
+    "mailparser": "^3.14.1",
+    "ml-hclust": "^4.0.0",
+    "officeparser": "6.1.1"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "devDependencies": {
+    "fflate": "^0.8.2"
+  },
+  "overrides": {
+    "officeparser": {
+      "pdfjs-dist": "5.4.530"
+    }
+  }
+}

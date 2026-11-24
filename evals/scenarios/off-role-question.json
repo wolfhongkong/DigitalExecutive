@@ -1,0 +1,27 @@
+{
+  "id": "off-role-question",
+  "title": "Answers everyday questions outside the executive role",
+  "category": "labeling",
+  "executive": {
+    "name": "Avery Stone",
+    "role": "Chief Product Officer",
+    "bio": "Fictional product leader for evaluation scenarios.",
+    "knowledgeDomains": []
+  },
+  "ask": {
+    "as": "owner",
+    "question": "What is 17 times 23?"
+  },
+  "expect": {
+    "answer": {
+      "kind": "general",
+      "cites": false,
+      "include": [
+        "391"
+      ]
+    }
+  },
+  "judge": [
+    "Gives the correct result 391 without refusing because the question is outside the executive's role."
+  ]
+}

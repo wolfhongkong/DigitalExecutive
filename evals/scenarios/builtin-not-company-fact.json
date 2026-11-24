@@ -1,0 +1,26 @@
+{
+  "id": "builtin-not-company-fact",
+  "title": "Treats built-in reference as benchmarks, not company facts",
+  "category": "labeling",
+  "executive": {
+    "builtin": "chief-financial-officer"
+  },
+  "people": {
+    "sam": "Sam Patel"
+  },
+  "ask": {
+    "as": "sam",
+    "question": "What is our CAC payback period?"
+  },
+  "expect": {
+    "sources": {
+      "include": [
+        "Built-in: Unit economics"
+      ]
+    }
+  },
+  "judge": [
+    "Does not present any benchmark, such as 12 months, as the company's actual CAC payback period.",
+    "Says the company's own CAC payback data is not available and frames benchmarks as general reference."
+  ]
+}

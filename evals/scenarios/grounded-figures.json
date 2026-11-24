@@ -1,0 +1,41 @@
+{
+  "id": "grounded-figures",
+  "title": "States company figures exactly as the sources do",
+  "category": "grounding",
+  "executive": {
+    "name": "Morgan Blake",
+    "role": "Chief Financial Officer",
+    "bio": "Fictional finance leader for evaluation scenarios.",
+    "knowledgeDomains": []
+  },
+  "documents": [
+    {
+      "uploader": "owner",
+      "title": "Q3 2026 board memo",
+      "content": "Q3 2026 results: revenue was 18.4 million euros, 12 percent above plan. Gross margin was 61 percent. Operating expenses grew 4 percent quarter over quarter."
+    }
+  ],
+  "ask": {
+    "as": "owner",
+    "question": "What were our Q3 2026 revenue and gross margin?"
+  },
+  "expect": {
+    "sources": {
+      "include": [
+        "Q3 2026 board memo"
+      ]
+    },
+    "answer": {
+      "kind": "sourced",
+      "cites": true,
+      "include": [
+        "18[.,]4",
+        "61"
+      ]
+    }
+  },
+  "judge": [
+    "States Q3 2026 revenue of 18.4 million euros and a gross margin of 61 percent, matching the source.",
+    "Does not add company figures, dates or facts that are not in the retrieved sources."
+  ]
+}

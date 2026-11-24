@@ -1,0 +1,46 @@
+{
+  "id": "newer-decision-wins",
+  "title": "Prefers the newer decision when sources conflict",
+  "category": "conflicts",
+  "executive": {
+    "name": "Avery Stone",
+    "role": "Chief Product Officer",
+    "bio": "Fictional product leader for evaluation scenarios.",
+    "knowledgeDomains": []
+  },
+  "documents": [
+    {
+      "uploader": "owner",
+      "title": "Pricing decision March 2026",
+      "content": "Leadership meeting minutes, 2 March 2026: the leadership team decided to keep list prices unchanged for all of 2026."
+    },
+    {
+      "uploader": "owner",
+      "title": "Pricing decision September 2026",
+      "content": "Leadership meeting minutes, 15 September 2026: the leadership team decided to raise list prices by 8 percent from January 2027. This replaces the March 2026 decision on list prices."
+    }
+  ],
+  "ask": {
+    "as": "owner",
+    "question": "What did we decide about list prices?"
+  },
+  "expect": {
+    "sources": {
+      "include": [
+        "Pricing decision March 2026",
+        "Pricing decision September 2026"
+      ]
+    },
+    "answer": {
+      "kind": "sourced",
+      "cites": true,
+      "include": [
+        "8 ?(percent|%)"
+      ]
+    }
+  },
+  "judge": [
+    "Presents the September 2026 decision (an 8 percent increase from January 2027) as the current decision.",
+    "Treats the March 2026 decision as superseded rather than current."
+  ]
+}

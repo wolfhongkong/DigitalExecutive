@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Digital Executive</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/icons.js" defer></script>
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <aside id="sidebar" class="sidebar" aria-label="Chat navigation">
+    <div class="sidebar-brand"><a class="brand" href="/"><span class="brand-icon">DE</span> Digital Executive</a><button id="close-sidebar" class="tool-button" title="Close sidebar" aria-label="Close sidebar"><i data-lucide="panel-left-close"></i></button></div>
+    <button id="new-chat" class="nav-action"><i data-lucide="square-pen"></i>New chat</button>
+    <label class="chat-search" for="chat-search"><i data-lucide="search"></i><input id="chat-search" type="search" placeholder="Search chats" aria-label="Search chats"></label>
+    <div class="sidebar-scroll">
+      <div class="section-heading"><h2>Projects</h2><button id="add-project" class="tool-button" title="New project" aria-label="New project"><i data-lucide="folder-plus"></i></button></div>
+      <nav id="projects" aria-label="Projects"></nav>
+      <div class="section-heading"><h2 id="history-heading">Recent chats</h2><button id="all-chats" class="tool-button" title="Show all chats" aria-label="Show all chats"><i data-lucide="list-filter"></i></button></div>
+      <nav id="conversations" aria-label="Recent conversations"></nav>
+      <p id="no-chats" class="sidebar-empty">No conversations yet</p>
+    </div>
+    <div class="sidebar-footer">
+      <label for="login-profile" class="login-label"><i data-lucide="circle-user-round"></i>Logged in as</label>
+      <select id="login-profile" aria-label="Logged in as"></select>
+      <details class="sandbox-note"><summary>Simulated login</summary><p>Choose who you are. Concrete knowledge you upload stays private to you; uploads to your own executive enrich your digital twin. AI-extracted general knowledge is shared with the public persona. There is no password or real access control. Use non-sensitive test data only.</p></details>
+      <button id="open-company" class="setup-button" type="button"><span id="company-light" class="status-light" aria-hidden="true"></span><span id="company-label">Company profile</span></button>
+      <button id="open-setup" class="setup-button" type="button"><span id="setup-light" class="status-light" aria-hidden="true"></span><span id="setup-label">Setup status</span></button>
+    </div>
+  </aside>
+  <button id="sidebar-backdrop" class="sidebar-backdrop" aria-label="Close navigation" hidden></button>
+  <main>
+    <header class="topbar">
+      <div class="executive-picker"><button id="toggle-sidebar" class="tool-button" title="Toggle sidebar" aria-label="Toggle sidebar" aria-controls="sidebar" aria-expanded="true"><i data-lucide="panel-left"></i></button><label for="executives" class="sr-only">Select executive</label><select id="executives" aria-label="Select executive"></select><button id="add-executive" class="tool-button" title="Add executive" aria-label="Add executive"><i data-lucide="user-plus"></i></button></div>
+      <div class="topbar-actions"><button id="executive-details" class="manage-executive-button" title="Manage executive" aria-label="Manage executive"><i data-lucide="sliders-horizontal"></i><span>Manage executive</span></button></div>
+    </header>
+    <section class="contextbar">
+      <span id="persona-mode" class="persona-mode"></span>
+      <span id="engine" class="badge"></span>
+    </section>
+    <div id="error" class="error" role="alert" hidden></div>
+    <section class="workspace">
+      <div class="chat-panel">
+        <div class="conversation-heading"><div><h1 id="conversation-title">New conversation</h1><p id="active-project-status" hidden></p></div><div class="heading-actions"><button id="delete-project" class="tool-button" title="Delete project" aria-label="Delete project" hidden><i data-lucide="folder-minus"></i></button><button id="edit-conversation" class="tool-button" title="Conversation settings" aria-label="Conversation settings" disabled><i data-lucide="ellipsis"></i></button></div></div>
+        <div id="messages" class="messages" aria-live="polite"></div>
+        <form id="chat-form" class="composer">
+          <label for="question" class="sr-only">Your question</label>
+          <textarea id="question" placeholder="Message your executive..." rows="2" maxlength="4000" required></textarea>
+          <div class="composer-footer"><button id="composer-upload" type="button" class="tool-button" title="Add knowledge" aria-label="Add knowledge"><i data-lucide="plus"></i></button><span>AI representation. Not executive authorization.</span><button id="send" type="submit" class="primary" title="Send message" aria-label="Send message"><i data-lucide="arrow-up"></i></button></div>
+        </form>
+        <p class="chat-disclaimer">AI can make mistakes. Check the original sources.</p>
+      </div>
+    </section>
+  </main>
+  <dialog id="project-dialog">
+    <form id="project-form">
+      <div class="dialog-heading"><h2>New project</h2><button type="button" class="close" aria-label="Close">&times;</button></div>
+      <label for="project-name">Project name</label><input id="project-name" maxlength="80" required>
+      <button class="primary" type="submit">Create project</button>
+    </form>
+  </dialog>
+  <dialog id="conversation-dialog">
+    <form id="conversation-form">
+      <div class="dialog-heading"><h2>Conversation settings</h2><button type="button" class="close" aria-label="Close">&times;</button></div>
+      <label for="conversation-name">Title</label><input id="conversation-name" maxlength="80" required>
+      <label for="conversation-project">Project</label><select id="conversation-project"></select>
+      <div class="speaker-tools executive-actions"><button class="primary" type="submit">Save changes</button><button id="delete-conversation" type="button">Delete conversation</button></div>
+    </form>
+  </dialog>
+  <dialog id="executive-dialog" class="executive-workspace" aria-labelledby="executive-name">
+    <header class="management-header"><div><p class="management-kicker">EXECUTIVE WORKSPACE</p><h2 id="executive-name">Manage executive</h2><p id="executive-role"></p><p id="executive-bio" hidden></p></div><button type="button" class="close tool-button" title="Close executive workspace" aria-label="Close executive workspace"><i data-lucide="x"></i></button></header>
+    <div class="management-notices"><p id="upload-result" role="status" hidden></p><p id="profile-save-status" role="status" hidden></p></div>
+    <div class="management-layout">
+    <section class="executive-profile" aria-label="Executive profile">
+    <form id="executive-form">
+      <h3 id="executive-form-title">Profile</h3>
+      <p id="executive-owner-note" class="hint">Create a fictional persona or use material you have permission to process.</p>
+      <label for="new-name">Name</label><input id="new-name" name="name" maxlength="80" required>
+      <label for="new-role">Role</label><input id="new-role" name="role" maxlength="120" required>
+      <label for="new-bio">Background</label><textarea id="new-bio" name="bio" maxlength="2000" rows="3"></textarea>
+      <fieldset id="knowledge-domains" class="knowledge-domains" hidden>
+        <legend>Built-in knowledge</legend>
+        <p class="hint">Curated, read-only reference documents with general management frameworks. Answers cite them as "Built-in", ranked below your own sources; they are not this executive's views or company facts.</p>
+        <div id="knowledge-domain-options" class="domain-options"></div>
+        <details id="builtin-documents"><summary>Browse selected built-in documents</summary><div id="builtin-document-list"></div></details>
+      </fieldset>
+      <p id="executive-create-note" class="hint">Ready to chat immediately when AI is configured: the role and background shape a simulated executive perspective, even without documents. Built-in reference knowledge is selected automatically from the role and can be changed after creating. A default soul.md provides direct, resourceful, opinionated, privacy-conscious behavior. Customize it using Edit executive soul.</p>
+      <div class="speaker-tools executive-actions">
+        <button id="executive-submit" class="primary" type="submit">Create executive</button>
+        <button id="delete-executive" type="button" hidden>Delete executive</button>
+      </div>
+    </form>
+    <section id="executive-tools" class="executive-tools" aria-label="Personality and memory">
+      <h3>Personality &amp; memory</h3>
+      <button id="open-soul" type="button"><i data-lucide="notebook-pen"></i>Edit executive soul</button>
+      <p id="soul-status" class="hint" role="status"></p>
+      <div class="memory-actions">
+        <button id="open-memory" type="button"><i data-lucide="brain"></i>Executive memory</button>
+        <button id="dreaming-indicator" class="dreaming-indicator" type="button" aria-live="polite"><span class="dreaming-heading"><span id="dreaming-label">Dreaming status</span> <span id="dreaming-percent"></span></span><progress id="dreaming-progress" max="100" value="0" aria-label="Dreaming progress"></progress><span id="dreaming-indicator-text">Connecting to Dreaming status...</span></button>
+      </div>
+    </section>
+    </section>
+    <section class="executive-knowledge" aria-label="Executive knowledge">
+      <div id="knowledge-unavailable" class="knowledge-unavailable" hidden><i data-lucide="folder-open"></i><h3>Knowledge library</h3><p>Create the executive to add sources.</p></div>
+      <div id="knowledge-library">
+        <div class="knowledge-heading"><div><h3>Knowledge library</h3><p id="document-count" role="status"></p></div><button id="open-upload" class="primary" type="button"><i data-lucide="plus"></i>Add knowledge</button></div>
+        <div class="knowledge-filters"><label class="knowledge-search" for="knowledge-search"><i data-lucide="search"></i><input id="knowledge-search" type="search" placeholder="Search sources" aria-label="Search knowledge sources"></label></div>
+        <div id="knowledge-categories" class="knowledge-categories" role="tablist" aria-label="Source type"></div>
+        <div id="upload-editor" class="inline-upload" hidden>
+          <div id="upload-form-slot"></div>
+        </div>
+        <div id="documents" role="tabpanel" aria-label="Knowledge sources"></div>
+        <details class="knowledge-scope"><summary>Collection &amp; processing details</summary><p id="mode-description"></p><p id="scope-help"></p><p>Documents are indexed immediately. Recordings await speaker review before assigned speech is indexed. Source types organize the library; they do not change retrieval.</p></details>
+      </div>
+    </section>
+    </div>
+  </dialog>
+  <dialog id="soul-dialog">
+    <form id="soul-form">
+      <div class="dialog-heading"><h2 id="soul-title">Executive soul</h2><button type="button" class="close" aria-label="Close">&times;</button></div>
+      <p class="hint">This executive's soul.md guides every conversation with this executive. It controls style and boundaries, not source evidence or collection access. Changes apply to future AI answers; existing messages are unchanged.</p>
+      <p class="hint">Defaults: direct, resourceful, opinionated, and privacy-conscious. Anyone using this sandbox can edit it. These instructions do not provide access control.</p>
+      <label for="soul-content">soul.md (Markdown)</label>
+      <textarea id="soul-content" rows="18" maxlength="12000" required></textarea>
+      <button id="save-soul" class="primary" type="submit">Save executive soul</button>
+      <p class="hint">One shared soul applies to everyone. Dreaming draws general tone and character traits from public and private evidence and regenerates its marked section. Concrete facts and actionable details stay in scoped memory files.</p>
+    </form>
+  </dialog>
+  <dialog id="setup-dialog" aria-labelledby="setup-title">
+    <div class="dialog-heading"><h2 id="setup-title">Setup status</h2><button type="button" class="close" aria-label="Close">&times;</button></div>
+    <p id="setup-summary" class="hint" role="status"></p>
+    <div class="setup-actions">
+      <button id="setup-refresh" type="button">Check again</button>
+      <button id="setup-live" type="button" class="primary">Run live checks</button>
+    </div>
+    <p class="hint">Live checks send one tiny request to the AI provider (a negligible charge may apply) and load the Python voice libraries, which can take up to a minute. Regular checks are free and read only local configuration.</p>
+    <ul id="setup-checks" class="setup-checks"></ul>
+  </dialog>
+  <dialog id="company-dialog" aria-labelledby="company-title">
+    <div class="dialog-heading"><h2 id="company-title">Company profile</h2><button type="button" class="close" aria-label="Close">&times;</button></div>
+    <p class="hint">One profile shared by every executive. It is added to every chat so advice fits your company's stage, figures, priorities and competitors. Everyone using this sandbox can see and edit it; use non-sensitive data.</p>
+    <section id="company-interview" class="company-section">
+      <h3>Interview</h3>
+      <p id="company-interview-status" class="hint" role="status"></p>
+      <ol id="company-transcript" class="company-transcript"></ol>
+      <label for="company-answer" class="sr-only">Your answer</label>
+      <textarea id="company-answer" rows="3" maxlength="4000"></textarea>
+      <div class="setup-actions">
+        <button id="company-send" type="button" class="primary">Send</button>
+        <button id="company-draft" type="button">Draft profile now</button>
+        <button id="company-restart" type="button">Start over</button>
+      </div>
+    </section>
+    <form id="company-form" class="company-section">
+      <h3>Profile</h3>
+      <p id="company-meta" class="hint" role="status"></p>
+      <div id="company-fields"></div>
+      <div class="setup-actions">
+        <button id="company-save" class="primary" type="submit">Save profile</button>
+        <button id="company-clear" type="button">Clear profile</button>
+      </div>
+    </form>
+  </dialog>
+  <dialog id="memory-dialog">
+    <div class="dialog-heading"><h2 id="memory-title">Executive memory</h2><button type="button" class="close" aria-label="Close">&times;</button></div>
+    <label for="memory-month">Memory file</label>
+    <select id="memory-month"><option value="index">memory.md</option></select>
+    <button id="memory-download" type="button">Download Markdown</button>
+    <button id="dream-now" type="button">Dream now</button>
+    <p class="hint">Dreaming runs after uploads with AI configured, organizes source-linked memory and distills tone and character into one shared soul. Newer events take precedence. Concrete memory stays in its source collection. Dream now processes existing data or retries a failed run.</p>
+    <p id="dream-status" class="hint" role="status"></p>
+    <pre id="memory-preview"></pre>
+    <details id="memory-editor">
+      <summary>Add a curated memory</summary>
+      <form id="memory-form">
+        <label for="memory-source">Reviewed source</label><select id="memory-source" required></select>
+        <label for="memory-category">Category</label>
+        <select id="memory-category"><option value="priority">Priority</option><option value="preference">Preference</option><option value="decision">Decision</option><option value="commitment">Commitment</option><option value="context">Context</option></select>
+        <label for="memory-date">Effective date</label><input id="memory-date" type="date" required>
+        <label for="memory-status">Status</label><select id="memory-status"><option value="inference">Interpretation</option><option value="confirmed">User-confirmed</option></select>
+        <label for="memory-content">Memory</label><textarea id="memory-content" rows="4" maxlength="2000" required></textarea>
+        <p id="memory-edit-status" class="hint" role="status"></p>
+        <button id="memory-cancel-replacement" type="button" hidden>Cancel replacement</button>
+        <button id="memory-save" type="submit" class="primary">Save memory</button>
+      </form>
+    </details>
+    <p id="memory-count" class="hint" role="status"></p>
+    <div id="memory-entries"></div>
+    <section id="chat-memory-section" aria-labelledby="chat-memory-heading">
+      <h3 id="chat-memory-heading">From your conversations</h3>
+      <p class="hint">After each AI answer, decisions and commitments you stated, open questions and the executive's advice are extracted and offered to later chats for continuity. They are private to you, this executive and this mode, are not source evidence, and are forgotten when their chat is deleted. They are also written to a readable relationship file per person. Set CHAT_MEMORY=off to disable.</p>
+      <p id="chat-memory-status" class="hint" role="status"></p>
+      <p id="chat-memory-file" class="hint"></p>
+      <button id="chat-memory-download" type="button" hidden>Download relationship file</button>
+      <div id="chat-memory-entries"></div>
+    </section>
+  </dialog>
+  <template id="upload-form-template">
+    <form id="upload-form">
+      <div class="upload-form-heading"><h3>Add knowledge</h3><button type="button" data-cancel-upload><i data-lucide="arrow-left"></i>Back to overview</button></div>
+      <p id="upload-destination" class="hint"></p>
+      <div id="drop-zone" class="drop-zone">
+        <label for="file">Choose files or drop them here</label><input id="file" type="file" multiple>
+        <p class="hint">Documents, emails, pictures (PNG, JPEG, WebP), videos, and audio. Up to 500 email files (EML, MSG, MBOX) per email-only batch; up to 20 files for other or mixed batches.</p>
+      </div>
+      <p class="hint">Documents/pictures: up to 25 MB each / 200,000 extracted characters. Video/audio: up to 3 GB.</p>
+      <button id="clear-files" type="button" hidden>Remove all attachments</button>
+      <div id="participant-editors"></div>
+      <label for="document-content">Paste anything here</label><textarea id="document-content" name="content" rows="8" maxlength="200000" placeholder="Text, screenshots, pictures, notes..." required></textarea>
+      <ul id="selected-files" aria-label="Attachments" aria-live="polite"></ul>
+      <p id="provider-notice" class="hint"></p>
+      <div id="video-info-group" hidden>
+        <p class="hint">Recording audio, participant labels, up to 12 overview frames, and time-aligned speaker frames are sent to <span id="recording-provider">the configured AI provider</span> for transcription, audiovisual speaker separation and visual analysis; analysis may incur charges. Voice fingerprints are stored locally when you assign a speaker to an executive.</p>
+        <p class="hint">With Gemini, speech across the recording is grouped by voice characteristics, supported by three video frames per speech turn. Anonymous audio/image references link returning speakers. You then connect each detected speaker to an executive once. Original uploads and derived text are retained locally until the source is deleted. Temporary audio and images are deleted after processing.</p>
+          <label for="voice-speaker-count">Number of speakers (optional)</label><input id="voice-speaker-count" type="number" min="1" max="20" step="1" placeholder="Auto">
+      </div>
+      <p id="upload-status" role="status" aria-live="polite"></p>
+      <div id="analysis-progress" hidden>
+        <label for="analysis-progress-bar" id="analysis-progress-label">Uploading recording...</label>
+        <progress id="analysis-progress-bar" max="100" aria-describedby="analysis-progress-help"></progress>
+        <p id="analysis-progress-help" class="hint">Stage-based progress, not a time estimate. AI requests may take several minutes.</p>
+      </div>
+      <ul id="upload-details" aria-live="polite"></ul>
+      <div class="upload-form-actions"><button id="upload-submit" class="primary" type="submit">Add to knowledge library</button><button type="button" data-cancel-upload>Cancel</button></div>
+    </form>
+  </template>
+  <dialog id="source-dialog">
+    <div class="dialog-heading"><h2 id="source-title">Source content</h2><button type="button" class="close" aria-label="Close">&times;</button></div>
+    <p class="hint">Full stored source text, not the original uploaded file. Video observations and speech recognition are machine-generated and may contain errors.</p>
+    <pre id="source-content"></pre>
+  </dialog>
+  <dialog id="speaker-dialog">
+    <form id="speaker-form">
+      <div class="dialog-heading"><h2 id="speaker-title">Identify speakers</h2><button type="button" class="close" aria-label="Close">&times;</button></div>
+      <p class="hint">The AI analyzes speech across the recording using voice characteristics and time-aligned video frames, then presents anonymous speaker cards. Connect each speaker to an existing executive once to assign all matching turns. Listen to the sample and check the suggested visual cue. Video is sampled, not continuously watched; AI associations can be wrong. Off-screen, uncertain or mixed speech may have no visual match or stay unassigned. Executive identities are supplied by you, never inferred by the AI.</p>
+      <p class="hint">Successful sections remain usable if other clips fail. Review warnings for missing time ranges; only confirmed, assigned speech is published.</p>
+      <p class="hint">Publishing creates separate sources for all assigned executives in this recording's chosen collection. Only their assigned speech is indexed; the full meeting and visual observations are not attributed. Re-publishing replaces these sources, not duplicates them. Closing retains the analysis; save a draft to keep unfinished assignments.</p>
+      <p id="speaker-count" class="hint" role="status"></p>
+      <div id="speaker-voice-memory">
+        <p class="hint">Voice fingerprints from confirmed speech are stored locally and updated automatically whenever you save or publish speaker assignments. They are used to suggest returning speakers. Fingerprints are sensitive biometric data. Suggested identities still require review.</p>
+        <p id="speaker-voice-memory-status" class="hint" role="status"></p>
+      </div>
+      <label for="speaker-expected-speakers">Number of speakers</label>
+      <div class="speaker-tools">
+        <input id="speaker-expected-speakers" type="number" min="1" max="20" step="1" placeholder="Auto">
+        <button id="speaker-regroup" type="button">Regroup voices locally</button>
+      </div>
+      <p id="speaker-regroup-status" class="hint" role="status"></p>
+      <div id="speaker-groups"></div>
+      <details id="speaker-playback"><summary>Recording playback and selected frame</summary>
+      <div id="speaker-player"></div>
+      <figure id="speaker-frame" hidden>
+        <img id="speaker-frame-image" alt="Video frame for the selected speech turn">
+        <figcaption id="speaker-frame-caption"></figcaption>
+      </figure>
+      <p id="speaker-frame-status" class="hint" role="status"></p>
+      </details>
+      <details id="speaker-tracking-tools"><summary>Re-analyze speakers / analyze older recordings</summary>
+      <p class="hint">Speaker tracking sends recording audio and time-aligned video frames to the configured AI provider and may incur charges. Available voice fingerprints are stored locally when you assign a speaker to an executive.</p>
+      <button id="speaker-detect" type="button">Detect speaker tracks across recording (AI)</button>
+      <p id="speaker-track-status" class="hint" role="status"></p>
+      </details>
+      <details><summary>Create an executive for a speaker</summary>
+        <label for="speaker-new-name">Name</label><input id="speaker-new-name" maxlength="80">
+        <label for="speaker-new-role">Role</label><input id="speaker-new-role" maxlength="120">
+        <button id="speaker-create" type="button">Create executive</button>
+      </details>
+      <details id="speaker-corrections"><summary>Advanced: transcript and individual-turn corrections</summary>
+      <p class="hint">You do not need to label each transcript turn. Use these controls only to correct an AI grouping mistake or review unknown speech.</p>
+      <label for="speaker-bulk">Assign selected segments to</label><select id="speaker-bulk"></select>
+      <div class="speaker-tools">
+        <button id="speaker-select-all" type="button">Select all segments</button>
+        <button id="speaker-clear-selection" type="button">Clear selection</button>
+        <button id="speaker-apply" type="button">Apply to selected segments</button>
+      </div>
+      <label class="consent"><input id="speaker-propagate" type="checkbox" checked> Apply a turn's executive label to all matching speaker turns. Uncheck to correct an individual turn.</label>
+      <div id="speaker-segments"></div>
+      </details>
+      <button id="speaker-save" type="button">Save draft for later</button>
+      <button id="speaker-publish" class="primary" type="submit">Publish assigned speech to executives</button>
+    </form>
+  </dialog>
+</body>
+</html>

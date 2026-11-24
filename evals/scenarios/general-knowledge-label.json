@@ -1,0 +1,28 @@
+{
+  "id": "general-knowledge-label",
+  "title": "Labels answers without evidence as general knowledge",
+  "category": "labeling",
+  "executive": {
+    "name": "Morgan Blake",
+    "role": "Chief Financial Officer",
+    "bio": "Fictional finance leader for evaluation scenarios.",
+    "knowledgeDomains": []
+  },
+  "ask": {
+    "as": "owner",
+    "question": "Why does water boil at a lower temperature at high altitude?"
+  },
+  "expect": {
+    "answer": {
+      "kind": "general",
+      "cites": false,
+      "include": [
+        "^General LLM knowledge"
+      ]
+    }
+  },
+  "judge": [
+    "Correctly explains that lower air pressure at altitude lowers the boiling point.",
+    "Does not claim the explanation comes from documents or represents the real executive's documented views."
+  ]
+}

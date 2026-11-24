@@ -1,0 +1,29 @@
+{
+  "id": "focus-latest-question",
+  "title": "Answers only the latest question",
+  "category": "conversation",
+  "executive": {
+    "name": "Riley Chen",
+    "role": "Chief Operating Officer",
+    "bio": "Fictional operations leader.",
+    "knowledgeDomains": []
+  },
+  "history": [
+    "How should we price our new analytics add-on?"
+  ],
+  "ask": {
+    "as": "owner",
+    "question": "How many interviews should a hiring loop for a senior engineer have?"
+  },
+  "expect": {
+    "answer": {
+      "exclude": [
+        "add-on"
+      ]
+    }
+  },
+  "judge": [
+    "Answers the hiring-loop question directly.",
+    "Does not recap or continue the earlier pricing question."
+  ]
+}
